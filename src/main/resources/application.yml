@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: lecture-search-system
+
+llm:
+  api:
+    url: ${llm.api.url}
+    key: ${llm.api.key}
