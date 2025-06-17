@@ -1,4 +1,4 @@
-package com.lss.model;
+package com.lss.model.ChatDoc;
 
 import lombok.Data;
 

@@ -6,29 +6,43 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class MarkdownProcessor {
-
-    private final Parser parser;
-    private final HtmlRenderer renderer;
-
-    public MarkdownProcessor() {
-        MutableDataSet options = new MutableDataSet();
-        this.parser = Parser.builder(options).build();
-        this.renderer = HtmlRenderer.builder(options).build();
-    }
-
     /**
      * 读取Markdown文件并将其内容转换为纯文本。
      * @param markdownFilePath Markdown文件路径
      * @return 提取的纯文本内容
      * @throws IOException 如果文件读取失败
      */
-    public String convertMarkdownToPlainText(Path markdownFilePath) throws IOException {
-        String markdownContent = Files.readString(markdownFilePath);
-        return renderer.render(parser.parse(markdownContent));
+    public static String convertMarkdownToContent(Path markdownFilePath) throws IOException {
+        List<String> allLines = Files.readAllLines(markdownFilePath, Charset.forName("GBK"));
+        if (allLines.isEmpty()) {
+            return ""; // 文件为空
+        }
+        List<String> bodyLines = allLines.subList(1, allLines.size());
+        return bodyLines.stream().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public static String convertMarkdownToTitle(Path markdownFilePath) throws IOException {
+        List<String> allLines = Files.readAllLines(markdownFilePath, Charset.forName("GBK"));
+        if (allLines.isEmpty()) {
+            return ""; // 文件为空
+        }
+        return allLines.getFirst();
+    }
+
+    public static String convertMarkdownToFullText(Path markdownFilePath) throws IOException {
+        String text = Files.readString(markdownFilePath, Charset.forName("GBK"));
+        if (text.isEmpty()) {
+            return ""; // 文件为空
+        }
+        return text;
     }
 }

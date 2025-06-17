@@ -1,11 +1,14 @@
 package com.lss.service;
 
+import com.lss.model.ChatDoc.ChatDocResponse;
+import com.lss.model.ChatDoc.ChatRequest;
+import com.lss.repository.InvertedIndexManager;
+import com.lss.model.LectureDocument;
 import com.lss.util.MarkdownProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -14,17 +17,14 @@ import java.util.List;
 @Slf4j
 public class IndexService {
 
-    private final LlmSegmenterService llmSegmenterService;
-    private final MarkdownProcessor markdownProcessor;
-    // 这里会注入倒排索引管理器
-    // private final InvertedIndexManager invertedIndexManager;
+    private final LLMSegmenterService llmSegmenterService;
+    private final InvertedIndexManager invertedIndexManager;
 
-    public IndexService(LlmSegmenterService llmSegmenterService,
+    public IndexService(LLMSegmenterService llmSegmenterService,
                         MarkdownProcessor markdownProcessor
-                        /*, InvertedIndexManager invertedIndexManager*/) {
+                        , InvertedIndexManager invertedIndexManager) {
         this.llmSegmenterService = llmSegmenterService;
-        this.markdownProcessor = markdownProcessor;
-        // this.invertedIndexManager = invertedIndexManager;
+        this.invertedIndexManager = invertedIndexManager;
     }
 
     /**
@@ -32,41 +32,43 @@ public class IndexService {
      * @param markdownFilePath 讲座Markdown文档路径
      * @return 分词后的词项列表
      */
-    public List<String> processMarkdownDocumentForIndexing(Path markdownFilePath) {
+    public ChatDocResponse processMarkdownDocumentForTerms(Path markdownFilePath) {
         String plainTextContent;
         try {
-            plainTextContent = markdownProcessor.convertMarkdownToPlainText(markdownFilePath);
+            plainTextContent = MarkdownProcessor.convertMarkdownToFullText(markdownFilePath);
+
             log.info("Successfully converted Markdown {} to plain text.", markdownFilePath.getFileName());
         } catch (IOException e) {
             log.error("Failed to read or convert Markdown file: {}", markdownFilePath, e);
-            return Collections.emptyList();
+            return null;
         }
 
         // 调用大模型API进行分词
-        List<String> terms = llmSegmenterService.segmentTextWithLlm(plainTextContent);
-        log.info("Segmented document {}. Found {} terms.", markdownFilePath.getFileName(), terms.size());
-
-        // 接下来，您将使用这些terms来构建倒排索引。
-        // 例如：
-        // LectureDocument doc = new LectureDocument(markdownFilePath.getFileName().toString(), plainTextContent, ...);
-        // invertedIndexManager.addDocument(doc, terms);
-
-        return terms;
+        return llmSegmenterService.segmentTextWithLlm(plainTextContent);
     }
 
     /**
      * 批量处理所有文档以构建初始索引。
      * @param documentPaths 所有Markdown文档的路径列表
      */
-    public void buildInitialIndex(List<Path> documentPaths) {
+    public void buildInitialIndex(List<Path> documentPaths) throws IOException {
         log.info("Starting initial index build for {} documents.", documentPaths.size());
         for (Path path : documentPaths) {
-            processMarkdownDocumentForIndexing(path);
-            // 在这里可能需要将LectureDocument对象及其terms传递给InvertedIndexManager来构建索引
-            // 例如：invertedIndexManager.addDocument(new LectureDocument(...), terms);
+            ChatDocResponse response = processMarkdownDocumentForTerms(path);
+            // 将LectureDocument对象及其terms传递给InvertedIndexManager来构建索引
+
+            String[] fileName = path.getFileName().toString().split("_");
+            LectureDocument document = new LectureDocument();
+            document.setId(fileName[0]); // 使用文件名作为文档ID
+            document.setTitle(fileName[1]);
+            document.setOriginalFilePath(path.toString());
+
+            invertedIndexManager.addDocumentToIndex(document, response.getTitleTextTokenized(), "Title");
+            invertedIndexManager.addDocumentToIndex(document, response.getFullTextTokenized(), "FullText");
+            invertedIndexManager.addDocumentToIndex(document, Collections.singletonList(response.getSpeaker()), "Speaker");
         }
         log.info("Initial index build completed.");
-        // 构建完成后，可能需要持久化索引
-        // invertedIndexManager.persistIndex();
+        // 构建完成后，需要持久化索引
+        invertedIndexManager.persistIndex();
     }
 }

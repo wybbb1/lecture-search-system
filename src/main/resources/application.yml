@@ -1,6 +1,8 @@
 spring:
   application:
     name: lecture-search-system
+  profiles:
+    active: dev
 
 llm:
   api:
