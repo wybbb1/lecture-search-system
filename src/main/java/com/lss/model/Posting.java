@@ -23,7 +23,7 @@ public class Posting implements Serializable {
     public Posting(String documentId) {
         this.documentId = documentId;
         this.termFrequency = 0;
-        this.positions = new ArrayList<>();
+        this.positions = new ArrayList<>();;
     }
 
     // 增加一个词项出现位置的方法

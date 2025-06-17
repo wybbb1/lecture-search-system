@@ -45,10 +45,6 @@ public class IndexingConfig {
             // 1. 在应用启动时，首先尝试加载已持久化的索引
             invertedIndexManager.loadIndex();
 
-            if (invertedIndexManager.getInvertedIndex() == null) {
-                return;
-            }
-            // 注意：此时 invertedIndexManager.getInvertedIndex() 已经可用了
 
             // 2. 准备需要索引的Markdown文件路径
             Path dataDirectory = Paths.get(PathConstant.MD_Path); // 假设Markdown文档在此目录下

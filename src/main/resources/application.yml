@@ -8,3 +8,10 @@ llm:
   api:
     url: ${llm.api.url}
     key: ${llm.api.key}
+
+langchain4j:
+  open-ai:
+    streaming-chat-model:
+      api-key: ${llm.api.key}
+      model-name: ${llm.api.model-name}
+      base-url: ${llm.api.url}

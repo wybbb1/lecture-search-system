@@ -2,6 +2,10 @@ package com.lss;
 
 import com.lss.constant.PathConstant;
 import com.lss.model.ChatDoc.ChatDocResponse;
+import com.lss.model.InvertedIndex;
+import com.lss.model.LectureDocument;
+import com.lss.model.Posting;
+import com.lss.repository.InvertedIndexManager;
 import com.lss.service.LLMSegmenterService;
 import com.lss.util.MarkdownProcessor;
 import jakarta.annotation.Resource;
@@ -11,12 +15,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 class LectureSearchSystemApplicationTests {
 
     @Resource
     private LLMSegmenterService llmSegmenterService;
+    @Resource
+    private InvertedIndexManager invertedIndexManager;
 
     /**
      * 测试大模型分词服务
@@ -37,4 +45,23 @@ class LectureSearchSystemApplicationTests {
 
     }
 
+    @Test
+    void InvertedIndexTest() {
+        InvertedIndex invertedIndex = invertedIndexManager.getInvertedIndex();
+        Map<String, List<Posting>> dictionary = invertedIndex.getDictionary();
+        for (Map.Entry<String, List<Posting>> entry : dictionary.entrySet()) {
+            String term = entry.getKey();
+            List<Posting> postings = entry.getValue();
+            System.out.println("Term: " + term);
+            for (Posting posting : postings) {
+                System.out.println("  Document ID: " + posting.getDocumentId() + ", Frequency: " + posting.getTermFrequency() + ", Positions: " + posting.getPositions());
+            }
+        }
+    }
+
+    @Test
+    void getDocumentByIdTest(){
+        LectureDocument document = invertedIndexManager.getDocumentById("515993");
+        System.out.println(document.getOriginalFilePath());
+    }
 }

@@ -42,7 +42,7 @@ public class InvertedIndexManager {
         if (!indexLoaded.get()) {
             // 如果索引未加载，抛出异常或返回null，取决于期望行为。
             // 推荐在应用启动时就确保加载，这样业务逻辑调用时不会出现未加载的情况。
-            throw new IllegalStateException("Inverted index has not been loaded or built yet.");
+            throw new IllegalStateException("倒排索引未初始化");
         }
         return invertedIndex;
     }
@@ -117,7 +117,7 @@ public class InvertedIndexManager {
         }
     }
 
-    // --- 查询接口 (保持不变) ---
+    // 查询接口
     public List<Posting> getPostingsList(String term) {
         return getInvertedIndex().getPostings(term);
     }

@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.LSS</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>lecture-search-system</name>
     <description>lecture-search-system</description>
@@ -32,11 +32,11 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>
@@ -73,6 +73,42 @@
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
             <version>5.4.4</version>
+        </dependency>
+        <!-- langchain4j -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>
+            <version>1.0.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-spring-boot-starter</artifactId>
+            <version>1.0.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+            <version>1.0.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-easy-rag</artifactId>
+            <version>1.0.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-community-dashscope</artifactId>
+            <version>1.0.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-community-dashscope-spring-boot-starter</artifactId>
+            <version>1.0.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+            <version>1.0.0-beta4</version>
         </dependency>
     </dependencies>
 

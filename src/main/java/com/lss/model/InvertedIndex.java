@@ -6,7 +6,6 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Data
 public class InvertedIndex implements Serializable {
@@ -20,7 +19,7 @@ public class InvertedIndex implements Serializable {
     // documentId -> LectureDocument
     private final Map<String, LectureDocument> documentStore;
 
-    // 用于计算IDF的文档频率 (Document Frequency)
+    // Document Frequency
     // term -> count_of_documents_containing_term
     private final Map<String, Integer> documentFrequencies;
 
@@ -41,7 +40,7 @@ public class InvertedIndex implements Serializable {
         documentStore.putIfAbsent(docId, document);
 
         // 临时Set用于记录当前文档中已出现的原始词项，以正确统计DF
-        Set<String> uniqueTermsInThisDocument = new HashSet<>(); // 导入 java.util.HashSet
+        Set<String> uniqueTermsInThisDocument = new HashSet<>();
 
         Map<String, List<Integer>> termPositionsInDoc = new HashMap<>();
         for (int i = 0; i < termsInDocument.size(); i++) {
@@ -108,4 +107,5 @@ public class InvertedIndex implements Serializable {
     public List<String> getAllDocumentIds() {
         return new ArrayList<>(documentStore.keySet());
     }
+
 }

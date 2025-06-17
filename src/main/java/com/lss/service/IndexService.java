@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -22,11 +20,17 @@ public class IndexService {
 
     private final LLMSegmenterService llmSegmenterService;
     private final InvertedIndexManager invertedIndexManager;
+    private final TFIDFCalculator tfidfCalculator; // 注入TFIDFCalculator
+    private final SimilarityCalculator similarityCalculator; // 注入SimilarityCalculator
 
-    public IndexService(LLMSegmenterService llmSegmenterService
-                        , InvertedIndexManager invertedIndexManager) {
+    public IndexService(LLMSegmenterService llmSegmenterService,
+                        InvertedIndexManager invertedIndexManager,
+                        TFIDFCalculator tfidfCalculator, // 注入
+                        SimilarityCalculator similarityCalculator) { // 注入
         this.llmSegmenterService = llmSegmenterService;
         this.invertedIndexManager = invertedIndexManager;
+        this.tfidfCalculator = tfidfCalculator; // 赋值
+        this.similarityCalculator = similarityCalculator; // 赋值
     }
 
     /**
@@ -53,6 +57,7 @@ public class IndexService {
      * 批量处理所有文档以构建初始索引。
      *
      * @param documentPaths      所有Markdown文档的路径列表
+     * @param forceRebuild
      * @param indexingThreadPool
      */
     public void buildInitialIndex(List<Path> documentPaths, Boolean forceRebuild, ExecutorService indexingThreadPool) throws IOException {
@@ -66,6 +71,8 @@ public class IndexService {
                 currentInvertedIndex.getTotalDocuments() > 0 &&
                 currentInvertedIndex.getTotalDocuments() == documentPaths.size()) {
             log.info("Existing index already contains {} documents, matching current data set size. Skipping full rebuild.", currentInvertedIndex.getTotalDocuments());
+            Set<String> allDocumentIds = new HashSet<>(currentInvertedIndex.getAllDocumentIds());
+            similarityCalculator.precomputeDocumentNorms(allDocumentIds);
             return;
         }
 
@@ -76,6 +83,8 @@ public class IndexService {
 
         buildIndexForAllDoc(documentPaths, indexingThreadPool);
 
+        Set<String> allDocumentIds = new HashSet<>(currentInvertedIndex.getAllDocumentIds());
+        similarityCalculator.precomputeDocumentNorms(allDocumentIds);
         // 构建完成后，需要持久化索引
         invertedIndexManager.persistIndex();
     }

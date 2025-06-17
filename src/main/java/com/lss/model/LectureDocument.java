@@ -18,5 +18,6 @@ public class LectureDocument implements Serializable {
     private String content;
     private String abstractText;
     private String originalFilePath; // 原始Markdown文件路径
+    private double vectorNorm; // 新增字段：存储文档向量的欧几里得范数
 
 }

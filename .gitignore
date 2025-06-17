@@ -5,7 +5,7 @@ target/
 !**/src/test/**/target/
 **/application-dev.yml
 **/test/**
-**/src/main/resources/data/**
+**/src/main/resources/data/lecture-data/**
 
 ### STS ###
 .apt_generated
