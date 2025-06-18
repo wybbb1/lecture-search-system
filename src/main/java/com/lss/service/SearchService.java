@@ -1,6 +1,8 @@
 // src/main/java/com/lss/service/SearchService.java
 package com.lss.service;
 
+import com.huaban.analysis.jieba.JiebaSegmenter;
+import com.lss.constant.PathConstant;
 import com.lss.model.Chat.ChatResponse;
 import com.lss.model.Index.LectureDocument;
 import com.lss.model.Index.LectureDocumentVO;
@@ -9,11 +11,12 @@ import com.lss.model.Result;
 import com.lss.model.RetrieveDocsItems;
 import com.lss.repository.InvertedIndexManager;
 import com.lss.repository.MarkdownManager;
+import com.lss.util.MarkdownProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -57,19 +60,12 @@ public class SearchService {
         if (queryString == null || queryString.trim().isEmpty()) {
             return Result.fail("请输入查询内容");
         }
+        // TODO:纠错服务
+        // 1. 对查询字符串进行分词 (使用jieba分词器)
+        JiebaSegmenter segmenter = new JiebaSegmenter();
+        List<String> queryTerms = segmenter.sentenceProcess(queryString);
 
-        // 1. 对查询字符串进行分词 (使用LLM服务，它现在返回Mono<ChatDocResponse>)
-        String prompt = "请对以下中文文本进行分词和摘要提取。返回 JSON 格式，包含以下字段：\n" +
-                "1. `query_text_tokenized`: 用户查询的分词结果，作为**JSON字符串数组**，例如 `[\"词1\", \"词2\"]`。\n" +
-                "2. `correct_query`: 正确的查询意图，作为**字符串**。如果用户查询内容不符合常理（例如打错字），请为该字段附上可能的值，否则请使用空字符串 `\"\"` 代替。\n" +
-                "请确保严格按照 JSON 格式输出，如果缺失用户查询请使用空数组 `[]` 代替。分词时忽略标点符号。不要包含其他任何解释或说明，直接返回JSON。\n";
-
-        // TODO：可以使用分词依赖来代替大模型，大模型只需要处理纠错
-        ChatResponse chatResponse = llmSegmenterService.segmentTextWithLlm(prompt, queryString);
-
-        if (chatResponse != null && chatResponse.getQueryTextTokenized() != null) {
-            List<String> queryTerms = chatResponse.getQueryTextTokenized();
-
+        if (queryTerms != null && !queryTerms.isEmpty()) {
             // 2. 倒排索引查找匹配文档 (布尔检索部分)
             // 获取包含任何一个查询词项的文档ID集合
             Map<String, List<String>> queryTermsByField = splitQueryTermsByField(queryTerms); // 可以扩展为按域查询
@@ -122,9 +118,33 @@ public class SearchService {
             List<LectureDocumentVO> topDocs = topResults.stream()
                     .map(item -> {
                         LectureDocument doc = item.getDocument();
-                        return new LectureDocumentVO(doc.getId(), doc.getTitle().split("\\.")[0]);
+                        try {
+                            return new LectureDocumentVO(doc.getId(), doc.getTitle().split("\\.")[0], markdownManager.getContentByPath(Path.of(doc.getOriginalFilePath())));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     })
                     .collect(Collectors.toList());
+
+            // 将doc文本写入到Prompt
+            // 这里可以将查询结果的文档内容写入到Prompt中，供后续使用
+            try (InputStream IS = new FileInputStream(PathConstant.TopN_Content);
+            ){
+                if (IS.available() > 0) {
+                    // 清空文件内容
+                    new PrintWriter(new FileOutputStream(PathConstant.TopN_Content, false)).close();
+                }
+                // 将查询结果写入到文件
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(PathConstant.TopN_Content))) {
+                    for (LectureDocumentVO doc : topDocs) {
+                        writer.write("ID: " + doc.getId() + "\n");
+                        writer.write("Title: " + doc.getTitle() + "\n");
+                        writer.write("Content:\n" + doc.getContent() + "\n\n");
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
             return Result.ok(topDocs);
         }else {

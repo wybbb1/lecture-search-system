@@ -11,8 +11,7 @@ import reactor.core.publisher.Flux;
 @AiService(
         streamingChatModel = "openAiStreamingChatModel",
         wiringMode = AiServiceWiringMode.EXPLICIT,
-        chatMemoryProvider = "openAiStreamingMemoryProviderNoPersist",
-        tools = "aiTool"
+        chatMemoryProvider = "openAiStreamingMemoryProviderNoPersist"
 )
 public interface AiAssistant extends ChatMemoryAccess {
     @SystemMessage(fromResource = "SystemPrompt.txt")

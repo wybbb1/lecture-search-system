@@ -1,5 +1,6 @@
 package com.lss;
 
+import com.huaban.analysis.jieba.JiebaSegmenter;
 import com.lss.constant.PathConstant;
 import com.lss.model.Index.InvertedIndex;
 import com.lss.model.Index.LectureDocument;
@@ -14,7 +15,7 @@ import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -73,5 +74,26 @@ class LectureSearchSystemApplicationTests {
     void searchTest(){
         Result result = searchService.search("民族宗教", 10);
         System.out.println(result.toString());
+    }
+
+    @Test
+    void fileTest(){
+        try (BufferedInputStream BIS = new BufferedInputStream(new FileInputStream(PathConstant.TopN_Content));
+        ){
+            if (BIS.available() > 0) {
+                // 清空文件内容
+                new PrintWriter(new FileOutputStream(PathConstant.TopN_Content, false)).close();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void jiebaTest(){
+        JiebaSegmenter segmenter = new JiebaSegmenter();
+        String sentence2 = "小明硕士毕业于中国科学院计算所，后在日本京都大学深造";
+        List<String> queryTerms = segmenter.sentenceProcess(sentence2);
+        System.out.println(queryTerms);
     }
 }

@@ -7,4 +7,6 @@ public class PathConstant {
 
     public static final String Inverted_Index = DATA_PATH + "inverted_index.ser";
 
+    public static final String TopN_Content = "src/main/resources/Top10DocData.txt";
+
 }
