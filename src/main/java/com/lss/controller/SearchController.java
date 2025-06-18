@@ -38,7 +38,7 @@ public class SearchController {
      */
     @GetMapping("/{id}")
     public Result performSearch(@PathVariable String id) {
-
+        return searchService.searchById(id);
     }
 
 

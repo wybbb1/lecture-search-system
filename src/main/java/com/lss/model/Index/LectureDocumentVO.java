@@ -14,5 +14,12 @@ public class LectureDocumentVO implements Serializable {
 
     private String id; // 文档唯一ID，可以是文件名哈希，或递增ID
     private String title; // 讲座题目
+    private String content; // 文档内容
+
+    public LectureDocumentVO(String id, String title) {
+        this.id = id;
+        this.title = title;
+        this.content = ""; // 默认内容为空
+    }
 
 }

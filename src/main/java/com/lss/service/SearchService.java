@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -144,5 +146,24 @@ public class SearchService {
         // fieldTerms.put("SPEAKER", queryTerms);
         // fieldTerms.put("ORGANIZER", queryTerms);
         return fieldTerms;
+    }
+
+    public Result searchById(String id) {
+        LectureDocument doc = invertedIndexManager.getDocumentById(id);
+        if (doc == null) {
+            return Result.fail("未找到指定ID的文档");
+        }
+
+        // 返回文档信息和内容
+
+        String Content = null;
+        try {
+            Content = markdownManager.getContentByPath(Path.of(doc.getOriginalFilePath()));
+        } catch (IOException e) {
+            throw new RuntimeException("获取文档内容失败: " + e.getMessage());
+        }
+        LectureDocumentVO documentVO = new LectureDocumentVO(doc.getId(), doc.getTitle().split("\\.")[0], Content);
+
+        return Result.ok(documentVO);
     }
 }
