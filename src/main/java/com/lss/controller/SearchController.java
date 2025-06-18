@@ -5,10 +5,7 @@ import com.lss.model.Result;
 import com.lss.service.SearchService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -32,6 +29,16 @@ public class SearchController {
     public Result performSearch(String query, @RequestParam(value = "topN", defaultValue = "10") int topN) {
         log.info("Received search query: '{}', topN: {}", query, topN);
         return searchService.search(query, topN);
+    }
+
+    /**
+     * 处理特定ID的搜索请求。
+     * @param id 搜索ID
+     * @return 搜索结果的Result对象
+     */
+    @GetMapping("/{id}")
+    public Result performSearch(@PathVariable String id) {
+
     }
 
 

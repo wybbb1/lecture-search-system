@@ -62,7 +62,7 @@ public class SearchService {
                 "2. `correct_query`: 正确的查询意图，作为**字符串**。如果用户查询内容不符合常理（例如打错字），请为该字段附上可能的值，否则请使用空字符串 `\"\"` 代替。\n" +
                 "请确保严格按照 JSON 格式输出，如果缺失用户查询请使用空数组 `[]` 代替。分词时忽略标点符号。不要包含其他任何解释或说明，直接返回JSON。\n";
 
-
+        // TODO：可以使用分词依赖来代替大模型，大模型只需要处理纠错
         ChatResponse chatResponse = llmSegmenterService.segmentTextWithLlm(prompt, queryString);
 
         if (chatResponse != null && chatResponse.getQueryTextTokenized() != null) {
@@ -115,6 +115,8 @@ public class SearchService {
             long durationMillis = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
             log.info("查询耗时" + durationMillis + "ms");
 
+            log.info("查询结果数量: " + topResults.size());
+
             List<LectureDocumentVO> topDocs = topResults.stream()
                     .map(item -> {
                         LectureDocument doc = item.getDocument();
@@ -129,15 +131,16 @@ public class SearchService {
         }
     }
 
+    // TODO:按域检索功能未开发
     // 辅助方法：将查询词项映射到不同的域
     // 简化：这里假设所有查询词项都匹配"BODY"域，或者未来可以解析查询语法来指定域
     private Map<String, List<String>> splitQueryTermsByField(List<String> queryTerms) {
         Map<String, List<String>> fieldTerms = new HashMap<>();
         // 默认将查询词项视为在BODY域中搜索
-//        fieldTerms.put("FullText", queryTerms);
+        fieldTerms.put("FullText", queryTerms);
         // 如果需要支持按域查询，例如 "title:战略" "speaker:李琛"，需要更复杂的查询解析器
         // 或者简单地在所有主要文本域中搜索
-         fieldTerms.put("Title", queryTerms);
+//         fieldTerms.put("Title", queryTerms);
         // fieldTerms.put("SPEAKER", queryTerms);
         // fieldTerms.put("ORGANIZER", queryTerms);
         return fieldTerms;
