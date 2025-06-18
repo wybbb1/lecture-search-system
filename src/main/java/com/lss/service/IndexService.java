@@ -1,9 +1,9 @@
 package com.lss.service;
 
-import com.lss.model.ChatDoc.ChatDocResponse;
-import com.lss.model.InvertedIndex;
+import com.lss.model.Chat.ChatResponse;
+import com.lss.model.Index.InvertedIndex;
 import com.lss.repository.InvertedIndexManager;
-import com.lss.model.LectureDocument;
+import com.lss.model.Index.LectureDocument;
 import com.lss.util.MarkdownProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,8 +38,14 @@ public class IndexService {
      * @param markdownFilePath 讲座Markdown文档路径
      * @return 分词后的词项列表
      */
-    public ChatDocResponse processMarkdownDocumentForTerms(Path markdownFilePath) {
+    public ChatResponse processMarkdownDocumentForTerms(Path markdownFilePath) {
         String plainTextContent;
+        String prompt = "请对以下中文文本进行分词和摘要提取。返回 JSON 格式，包含以下字段：\n" +
+                "1. `title_text_tokenized`: 文本标题的分词结果，作为**JSON字符串数组**，例如 `[\"词1\", \"词2\"]`。\n" +
+                "2. `full_text_tokenized`: 文本正文的完整分词结果，作为**JSON字符串数组**，例如 `[\"词1\", \"词2\"]`。\n" +
+                "3. `speaker`: 该讲座的主讲人姓名字符串。\n" +
+                "请确保严格按照 JSON 格式输出，如果缺失标题或正文请使用空数组 `[]` 代替，如果缺失主讲人请使用空字符串 `\"\"` 代替。分词时忽略标点符号。不要包含其他任何解释或说明，直接返回JSON。\n" +
+                "文本内容：\n";
         try {
             plainTextContent = MarkdownProcessor.convertMarkdownToFullText(markdownFilePath);
 
@@ -50,7 +56,7 @@ public class IndexService {
         }
 
         // 调用大模型API进行分词
-        return llmSegmenterService.segmentTextWithLlm(plainTextContent);
+        return llmSegmenterService.segmentTextWithLlm(prompt, plainTextContent);
     }
 
     /**
@@ -71,8 +77,8 @@ public class IndexService {
                 currentInvertedIndex.getTotalDocuments() > 0 &&
                 currentInvertedIndex.getTotalDocuments() == documentPaths.size()) {
             log.info("Existing index already contains {} documents, matching current data set size. Skipping full rebuild.", currentInvertedIndex.getTotalDocuments());
-            Set<String> allDocumentIds = new HashSet<>(currentInvertedIndex.getAllDocumentIds());
-            similarityCalculator.precomputeDocumentNorms(allDocumentIds);
+//            Set<String> allDocumentIds = new HashSet<>(currentInvertedIndex.getAllDocumentIds());
+//            similarityCalculator.precomputeDocumentNorms(allDocumentIds);
             return;
         }
 
@@ -120,7 +126,7 @@ public class IndexService {
         List<Future<?>> futures = new ArrayList<>();
         for (Path path : documentPaths) {
             futures.add(indexingThreadPool.submit(() -> {
-                ChatDocResponse response = processMarkdownDocumentForTerms(path);
+                ChatResponse response = processMarkdownDocumentForTerms(path);
 
                 String[] fileName = path.getFileName().toString().split("_");
                 LectureDocument document = new LectureDocument();

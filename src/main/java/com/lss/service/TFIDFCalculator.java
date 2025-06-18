@@ -1,11 +1,9 @@
 package com.lss.service;
 
-import com.lss.model.InvertedIndex; // 如果需要直接访问InvertedIndex对象
 import com.lss.repository.InvertedIndexManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

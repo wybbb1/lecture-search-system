@@ -6,7 +6,7 @@ spring:
 
 llm:
   api:
-    url: ${llm.api.url}
+    url: ${llm.api.terms_url}
     key: ${llm.api.key}
 
 langchain4j:
@@ -14,4 +14,4 @@ langchain4j:
     streaming-chat-model:
       api-key: ${llm.api.key}
       model-name: ${llm.api.model-name}
-      base-url: ${llm.api.url}
+      base-url: ${llm.api.chat-url}

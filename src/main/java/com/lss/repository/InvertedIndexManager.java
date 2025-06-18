@@ -1,9 +1,9 @@
 package com.lss.repository;
 
 import com.lss.constant.PathConstant;
-import com.lss.model.InvertedIndex;
-import com.lss.model.LectureDocument;
-import com.lss.model.Posting;
+import com.lss.model.Index.InvertedIndex;
+import com.lss.model.Index.LectureDocument;
+import com.lss.model.Index.Posting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

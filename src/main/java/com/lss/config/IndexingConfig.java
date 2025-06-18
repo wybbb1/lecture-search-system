@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 public class IndexingConfig {
 
     // 配置一个固定大小的线程池，用于异步调用AI
-    private static final int THREAD_POOL_SIZE = 5; // 例如，同时处理5个文档
+    private static final int THREAD_POOL_SIZE = 10; // 例如，同时处理5个文档
 
     @Bean(destroyMethod = "shutdown") // 确保Spring在应用关闭时优雅地关闭线程池
     public ExecutorService indexingThreadPool() {
@@ -44,7 +44,6 @@ public class IndexingConfig {
 
             // 1. 在应用启动时，首先尝试加载已持久化的索引
             invertedIndexManager.loadIndex();
-
 
             // 2. 准备需要索引的Markdown文件路径
             Path dataDirectory = Paths.get(PathConstant.MD_Path); // 假设Markdown文档在此目录下

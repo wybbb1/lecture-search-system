@@ -1,8 +1,8 @@
 package com.lss.service;
 
-import com.lss.model.InvertedIndex;
-import com.lss.model.LectureDocument;
-import com.lss.model.Posting;
+import com.lss.model.Index.InvertedIndex;
+import com.lss.model.Index.LectureDocument;
+import com.lss.model.Index.Posting;
 import com.lss.repository.InvertedIndexManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
