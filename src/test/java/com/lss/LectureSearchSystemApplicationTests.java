@@ -96,4 +96,10 @@ class LectureSearchSystemApplicationTests {
         List<String> queryTerms = segmenter.sentenceProcess(sentence2);
         System.out.println(queryTerms);
     }
+
+    @Test
+    void queryAdviceTest() {
+        Result result = searchService.queryAdvice("苹果机手");
+        System.out.println(result.toString());
+    }
 }

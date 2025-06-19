@@ -31,8 +31,8 @@ public class SearchService {
 
     @Value("${llm.api.key}")
     private String llmApiKey;
-
-    private final LLMSegmenterService llmSegmenterService; // 用于查询分词
+    
+    private final QueryAdviceAssistant queryAdviceAssistant;
     private final SimilarityCalculator similarityCalculator;
     private final InvertedIndexManager invertedIndexManager;
     private final MarkdownManager markdownManager;
@@ -40,11 +40,12 @@ public class SearchService {
     public SearchService(LLMSegmenterService llmSegmenterService,
                          SimilarityCalculator similarityCalculator,
                          InvertedIndexManager invertedIndexManager,
-                         MarkdownManager markdownManager) {
-        this.llmSegmenterService = llmSegmenterService;
+                         MarkdownManager markdownManager,
+                         QueryAdviceAssistant queryAdviceAssistant) {
         this.similarityCalculator = similarityCalculator;
         this.invertedIndexManager = invertedIndexManager;
         this.markdownManager = markdownManager;
+        this.queryAdviceAssistant = queryAdviceAssistant;
     }
 
     /**
@@ -155,10 +156,9 @@ public class SearchService {
 
     // TODO:按域检索功能未开发
     // 辅助方法：将查询词项映射到不同的域
-    // 简化：这里假设所有查询词项都匹配"BODY"域，或者未来可以解析查询语法来指定域
     private Map<String, List<String>> splitQueryTermsByField(List<String> queryTerms) {
         Map<String, List<String>> fieldTerms = new HashMap<>();
-        // 默认将查询词项视为在BODY域中搜索
+
         fieldTerms.put("FullText", queryTerms);
         // 如果需要支持按域查询，例如 "title:战略" "speaker:李琛"，需要更复杂的查询解析器
         // 或者简单地在所有主要文本域中搜索
@@ -175,7 +175,6 @@ public class SearchService {
         }
 
         // 返回文档信息和内容
-
         String Content = null;
         try {
             Content = markdownManager.getContentByPath(Path.of(doc.getOriginalFilePath()));
@@ -185,5 +184,13 @@ public class SearchService {
         LectureDocumentVO documentVO = new LectureDocumentVO(doc.getId(), doc.getTitle().split("\\.")[0], Content);
 
         return Result.ok(documentVO);
+    }
+
+    public Result queryAdvice(String query) {
+        String response = queryAdviceAssistant.chat(query);
+        if (response == null || response.isEmpty() || response.equals("没错误")) {
+            return Result.ok();
+        }
+        return Result.ok(response);
     }
 }

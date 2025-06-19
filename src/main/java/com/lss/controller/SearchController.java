@@ -2,7 +2,9 @@
 package com.lss.controller;
 
 import com.lss.model.Result;
+import com.lss.service.QueryAdviceAssistant;
 import com.lss.service.SearchService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +15,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class SearchController {
 
-    private final SearchService searchService;
-
-    public SearchController(SearchService searchService) {
-        this.searchService = searchService;
-    }
+    @Resource
+    private SearchService searchService;
 
     /**
      * 处理搜索请求。
@@ -31,21 +30,9 @@ public class SearchController {
         return searchService.search(query, topN);
     }
 
-    /**
-     * 处理特定ID的搜索请求。
-     * @param id 搜索ID
-     * @return 搜索结果的Result对象
-     */
-    @GetMapping("/{id}")
-    public Result performSearch(@PathVariable String id) {
-        return searchService.searchById(id);
+    @GetMapping("/advice")
+    public Result getSearchAdvice(@RequestParam String query) {
+        log.info("Received search advice request for query: '{}'", query);
+        return searchService.queryAdvice(query);
     }
-
-
-
-    // 您也可以添加一个用于渲染HTML页面的Controller，或者纯前端项目则不需要
-    // @GetMapping("/page")
-    // public String searchPage() {
-    //     return "search_page"; // 返回Thymeleaf模板名称
-    // }
 }

@@ -15,3 +15,7 @@ langchain4j:
       api-key: ${llm.api.key}
       model-name: ${llm.api.model-name}
       base-url: ${llm.api.chat-url}
+    chat-model:
+      api-key: ${llm.api.key}
+      model-name: ${llm.api.model-name}
+      base-url: ${llm.api.chat-url}
