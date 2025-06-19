@@ -72,7 +72,7 @@ class LectureSearchSystemApplicationTests {
 
     @Test
     void searchTest(){
-        Result result = searchService.search("民族宗教", 10);
+        Result result = searchService.search(1, "民族宗教", 10);
         System.out.println(result.toString());
     }
 
@@ -92,7 +92,7 @@ class LectureSearchSystemApplicationTests {
     @Test
     void jiebaTest(){
         JiebaSegmenter segmenter = new JiebaSegmenter();
-        String sentence2 = "小明硕士毕业于中国科学院计算所，后在日本京都大学深造";
+        String sentence2 = "黄伟文";
         List<String> queryTerms = segmenter.sentenceProcess(sentence2);
         System.out.println(queryTerms);
     }
@@ -101,5 +101,10 @@ class LectureSearchSystemApplicationTests {
     void queryAdviceTest() {
         Result result = searchService.queryAdvice("苹果机手");
         System.out.println(result.toString());
+    }
+
+    @Test
+    void fieldTest(){
+        System.out.println(invertedIndexManager.getInvertedIndex());
     }
 }

@@ -25,9 +25,9 @@ public class SearchController {
      * @return 搜索结果的Mono<SearchResult>对象
      */
     @GetMapping()
-    public Result performSearch(String query, @RequestParam(value = "topN", defaultValue = "10") int topN) {
+    public Result performSearch(Integer type, String query, @RequestParam(value = "topN", defaultValue = "10") int topN) {
         log.info("Received search query: '{}', topN: {}", query, topN);
-        return searchService.search(query, topN);
+        return searchService.search(type, query, topN);
     }
 
     @GetMapping("/advice")

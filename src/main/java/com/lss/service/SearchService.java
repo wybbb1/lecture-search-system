@@ -3,7 +3,6 @@ package com.lss.service;
 
 import com.huaban.analysis.jieba.JiebaSegmenter;
 import com.lss.constant.PathConstant;
-import com.lss.model.Chat.ChatResponse;
 import com.lss.model.Index.LectureDocument;
 import com.lss.model.Index.LectureDocumentVO;
 import com.lss.model.Index.Posting;
@@ -11,7 +10,6 @@ import com.lss.model.Result;
 import com.lss.model.RetrieveDocsItems;
 import com.lss.repository.InvertedIndexManager;
 import com.lss.repository.MarkdownManager;
-import com.lss.util.MarkdownProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,13 +53,13 @@ public class SearchService {
      * @param topN 返回结果的数量，例如10
      * @return 包含搜索结果和耗时的SearchResult对象
      */
-    public Result search(String queryString, int topN) {
+    public Result search(Integer type, String queryString, int topN) {
         long startTime = System.nanoTime(); // 记录开始时间
 
         if (queryString == null || queryString.trim().isEmpty()) {
             return Result.fail("请输入查询内容");
         }
-        // TODO:纠错服务
+
         // 1. 对查询字符串进行分词 (使用jieba分词器)
         JiebaSegmenter segmenter = new JiebaSegmenter();
         List<String> queryTerms = segmenter.sentenceProcess(queryString);
@@ -69,11 +67,11 @@ public class SearchService {
         if (queryTerms != null && !queryTerms.isEmpty()) {
             // 2. 倒排索引查找匹配文档 (布尔检索部分)
             // 获取包含任何一个查询词项的文档ID集合
-            Map<String, List<String>> queryTermsByField = splitQueryTermsByField(queryTerms); // 可以扩展为按域查询
+            Map<String, List<String>> queryTermsByField = splitQueryTermsByField(type, queryTerms); // 可以扩展为按域查询
 
             Set<String> candidateDocIds = new HashSet<>();
             for (Map.Entry<String, List<String>> entry : queryTermsByField.entrySet()) {
-                String fieldPrefix = entry.getKey(); // 例如 "BODY:"
+                String fieldPrefix = entry.getKey();
                 List<String> termsInField = entry.getValue();
                 for (String term : termsInField) {
                     String indexedTerm = fieldPrefix + ":" + term; // 构造带域的索引词项
@@ -154,17 +152,23 @@ public class SearchService {
         }
     }
 
-    // TODO:按域检索功能未开发
-    // 辅助方法：将查询词项映射到不同的域
-    private Map<String, List<String>> splitQueryTermsByField(List<String> queryTerms) {
+    // 将查询词项映射到不同的域
+    private Map<String, List<String>> splitQueryTermsByField(Integer field, List<String> queryTerms) {
         Map<String, List<String>> fieldTerms = new HashMap<>();
 
-        fieldTerms.put("FullText", queryTerms);
-        // 如果需要支持按域查询，例如 "title:战略" "speaker:李琛"，需要更复杂的查询解析器
-        // 或者简单地在所有主要文本域中搜索
-//         fieldTerms.put("Title", queryTerms);
-        // fieldTerms.put("SPEAKER", queryTerms);
-        // fieldTerms.put("ORGANIZER", queryTerms);
+        if (field != null) {
+            // 如果指定了域，按域分组查询词项
+            String fieldPrefix = switch (field) {
+                case 1 -> "Title"; // 标题
+                case 3 -> "Speaker"; // 演讲者
+                default -> "FullText"; // 全文检索
+            };
+            fieldTerms.put(fieldPrefix, queryTerms);
+        } else {
+            // 如果没有指定域，默认使用全文检索
+            fieldTerms.put("FullText", queryTerms);
+        }
+
         return fieldTerms;
     }
 
