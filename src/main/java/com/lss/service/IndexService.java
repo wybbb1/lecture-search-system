@@ -20,16 +20,13 @@ public class IndexService {
 
     private final LLMSegmenterService llmSegmenterService;
     private final InvertedIndexManager invertedIndexManager;
-    private final TFIDFCalculator tfidfCalculator; // 注入TFIDFCalculator
     private final SimilarityCalculator similarityCalculator; // 注入SimilarityCalculator
 
     public IndexService(LLMSegmenterService llmSegmenterService,
                         InvertedIndexManager invertedIndexManager,
-                        TFIDFCalculator tfidfCalculator, // 注入
                         SimilarityCalculator similarityCalculator) { // 注入
         this.llmSegmenterService = llmSegmenterService;
         this.invertedIndexManager = invertedIndexManager;
-        this.tfidfCalculator = tfidfCalculator; // 赋值
         this.similarityCalculator = similarityCalculator; // 赋值
     }
 
