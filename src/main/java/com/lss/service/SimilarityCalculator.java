@@ -81,7 +81,7 @@ public class SimilarityCalculator {
 
     /**
      * 计算查询与单个文档的余弦相似度。
-     *
+     * @param field 查询的域
      * @param queryTerms 查询分词后的词项列表
      * @param documentId 待比较的文档ID
      * @return 余弦相似度得分，范围[0, 1]
@@ -139,8 +139,6 @@ public class SimilarityCalculator {
                     double tf = tfidfCalculator.calculateTF(posting.getTermFrequency());
                     double idf = tfidfCalculator.calculateIDF(queryTerm); // IDF是针对原始词项
                     aggregatedDocTermWeight += tf * idf; // 累加该词项在不同域的权重
-                    // 注意：如果一个词项在文档的多个域中出现，这里的累加可能会导致权重过高
-                    // 实际中可能需要更复杂的聚合策略（例如求和后归一化，或只取最高值）
                     break; // 找到该域中第一个匹配的即可
                 }
             }
