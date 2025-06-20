@@ -89,9 +89,18 @@ public class SearchService {
             }
 
             // 3. 计算相关性分数 (余弦相似度)
+            String fieldPrefix = "FullText"; // 默认使用全文检索
+            if (type != null) {
+                fieldPrefix = switch (type) {
+                    case 1 -> "Title"; // 标题
+                    case 2 -> "Speaker"; // 演讲者
+                    default -> "FullText"; // 全文检索
+                };
+            }
+
             List<RetrieveDocsItems> results = new ArrayList<>();
             for (String docId : candidateDocIds) {
-                double similarityScore = similarityCalculator.calculateCosineSimilarity(queryTerms, docId);
+                double similarityScore = similarityCalculator.calculateCosineSimilarity(fieldPrefix, queryTerms, docId);
                 if (similarityScore > 0) { // 只添加相似度大于0的文档
                     LectureDocument doc = invertedIndexManager.getDocumentById(docId);
                     if (doc != null) {
@@ -160,7 +169,7 @@ public class SearchService {
             // 如果指定了域，按域分组查询词项
             String fieldPrefix = switch (field) {
                 case 1 -> "Title"; // 标题
-                case 3 -> "Speaker"; // 演讲者
+                case 2 -> "Speaker"; // 演讲者
                 default -> "FullText"; // 全文检索
             };
             fieldTerms.put(fieldPrefix, queryTerms);

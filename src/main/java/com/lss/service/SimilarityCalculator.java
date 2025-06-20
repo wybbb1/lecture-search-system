@@ -44,9 +44,6 @@ public class SimilarityCalculator {
             double sumOfSquares = 0.0;
             // 获取该文档包含的所有词项及其频率
             // 这需要遍历所有Posting，找到对应文档的TF。
-            // 这种方式效率较低，更好的方式是在构建索引时，同时累加平方和。
-            // 让我们在InvertedIndex中添加一个获取文档所有词项TF的方法
-            // 或者更简单：遍历倒排索引的dictionary，找到所有包含docId的Posting
             // 考虑到InvertedIndex的结构，直接迭代所有词项来获取其在特定文档的TF
             for (Map.Entry<String, List<Posting>> entry : invertedIndex.getDictionary().entrySet()) {
                 String indexedTerm = entry.getKey(); // "FIELD:term"
@@ -89,7 +86,7 @@ public class SimilarityCalculator {
      * @param documentId 待比较的文档ID
      * @return 余弦相似度得分，范围[0, 1]
      */
-    public double calculateCosineSimilarity(List<String> queryTerms, String documentId) {
+    public double calculateCosineSimilarity(String field, List<String> queryTerms, String documentId) {
         if (queryTerms == null || queryTerms.isEmpty()) {
             return 0.0;
         }
@@ -134,23 +131,20 @@ public class SimilarityCalculator {
 
             // 聚合文档中该词项在所有相关域的TF-IDF权重
             double aggregatedDocTermWeight = 0.0;
-            // 遍历所有可能的域前缀 (例如 "TITLE:", "BODY:", "SPEAKER:", "ORGANIZER:")
-            List<String> possibleFields = List.of("TITLE", "FullText", "SPEAKER");
 
-            for (String field : possibleFields) {
-                String indexedTermInDoc = field + ":" + queryTerm;
-                List<Posting> postings = invertedIndex.getPostings(indexedTermInDoc);
-                for (Posting posting : postings) {
-                    if (posting.getDocumentId().equals(documentId)) {
-                        double tf = tfidfCalculator.calculateTF(posting.getTermFrequency());
-                        double idf = tfidfCalculator.calculateIDF(queryTerm); // IDF是针对原始词项
-                        aggregatedDocTermWeight += tf * idf; // 累加该词项在不同域的权重
-                        // 注意：如果一个词项在文档的多个域中出现，这里的累加可能会导致权重过高
-                        // 实际中可能需要更复杂的聚合策略（例如求和后归一化，或只取最高值）
-                        break; // 找到该域中第一个匹配的即可
-                    }
+            String indexedTermInDoc = field + ":" + queryTerm;
+            List<Posting> postings = invertedIndex.getPostings(indexedTermInDoc);
+            for (Posting posting : postings) {
+                if (posting.getDocumentId().equals(documentId)) {
+                    double tf = tfidfCalculator.calculateTF(posting.getTermFrequency());
+                    double idf = tfidfCalculator.calculateIDF(queryTerm); // IDF是针对原始词项
+                    aggregatedDocTermWeight += tf * idf; // 累加该词项在不同域的权重
+                    // 注意：如果一个词项在文档的多个域中出现，这里的累加可能会导致权重过高
+                    // 实际中可能需要更复杂的聚合策略（例如求和后归一化，或只取最高值）
+                    break; // 找到该域中第一个匹配的即可
                 }
             }
+
             sumProduct += queryTermWeight * aggregatedDocTermWeight;
         }
 

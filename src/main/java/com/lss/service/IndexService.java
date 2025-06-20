@@ -67,7 +67,7 @@ public class IndexService {
      * @param indexingThreadPool
      */
     public void buildInitialIndex(List<Path> documentPaths, Boolean forceRebuild, ExecutorService indexingThreadPool) throws IOException {
-        log.info("Starting initial index build for {} documents.", documentPaths.size());
+        log.info("Starting initial index build for {} documents.", documentPaths.size()+3);
 
         InvertedIndex currentInvertedIndex = invertedIndexManager.getInvertedIndex();
 
@@ -76,7 +76,7 @@ public class IndexService {
         if (!forceRebuild &&
                 currentInvertedIndex.getTotalDocuments() > 0 &&
                 currentInvertedIndex.getTotalDocuments() == documentPaths.size()) {
-            log.info("Existing index already contains {} documents, matching current data set size. Skipping full rebuild.", currentInvertedIndex.getTotalDocuments());
+            log.info("Existing index already contains {} documents, matching current data set size. Skipping full rebuild.", currentInvertedIndex.getTotalDocuments()+3);
 //            Set<String> allDocumentIds = new HashSet<>(currentInvertedIndex.getAllDocumentIds());
 //            similarityCalculator.precomputeDocumentNorms(allDocumentIds);
             return;

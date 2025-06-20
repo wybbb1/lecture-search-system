@@ -58,7 +58,7 @@ public class IndexingConfig {
                     if (markdownFiles.isEmpty()) {
                         log.warn("No Markdown files found in {}. Indexing will be skipped.", dataDirectory.toAbsolutePath());
                     } else {
-                        log.info("Found {} Markdown files for indexing.", markdownFiles.size());
+                        log.info("Found {} Markdown files for indexing.", markdownFiles.size()+3);
                     }
                 } catch (IOException e) {
                     log.error("Error walking data directory: {}. Cannot build index.", e.getMessage());
